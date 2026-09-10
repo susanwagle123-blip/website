@@ -568,6 +568,641 @@
       <span class="tb-nav-indicator" id="tbNavIndicator"></span>
     </nav>
   </div>
+
+  
+<!--
+  ================================================================
+  SITE SEARCH — 4 blocks to paste into your portfolio index.html
+  ----------------------------------------------------------------
+  BLOCK 1 (<style>)   -> paste right BEFORE </head>
+  BLOCK 2 (button)    -> paste inside <div class="tb-right-group">, right AFTER </nav>
+  BLOCK 3 (overlay)   -> paste right AFTER </main>
+  BLOCK 4 (<script>)  -> paste right AFTER your existing </script>
+                         (before the Cloudflare Web Analytics comment)
+  Shortcuts: "/" or Ctrl+K (Cmd+K on Mac) opens search,
+             arrows + Enter pick a result, n / N jump between
+             highlights on the page, Esc closes / clears.
+  ================================================================
+-->
+
+
+<!-- ======================= BLOCK 1 — SEARCH START (styles) ======================= -->
+<style>
+  /* ---------- trigger button in the top bar ---------- */
+  .sx-trigger{
+    display:inline-flex;align-items:center;gap:8px;
+    height:28px;padding:0 6px 0 9px;
+    background:rgba(61,255,154,0.04);
+    border:1px solid var(--border);border-radius:3px;
+    color:var(--text-dim);font-family:var(--font-display);font-size:11px;
+    cursor:pointer;
+    transition:border-color .2s ease,color .2s ease,box-shadow .2s ease,background .2s ease;
+  }
+  .sx-trigger:hover,.sx-trigger:focus-visible{
+    border-color:var(--green-dim);color:var(--green-bright);
+    background:rgba(61,255,154,0.07);box-shadow:0 0 14px -6px var(--green);outline:none;
+  }
+  .sx-trigger svg{width:15px;height:15px;overflow:visible;flex-shrink:0;}
+  .sx-lens{fill:none;stroke:currentColor;stroke-width:2;}
+  .sx-handle{stroke:currentColor;stroke-width:2.4;stroke-linecap:round;}
+  /* radar-style arc that sweeps around the lens on hover */
+  .sx-lens-scan{
+    fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round;
+    stroke-dasharray:7 34;opacity:0;
+    transform-box:fill-box;transform-origin:center;
+  }
+  .sx-trigger:hover .sx-lens-scan,.sx-trigger:focus-visible .sx-lens-scan{opacity:1;animation:sxScan 1.1s linear infinite;}
+  @keyframes sxScan{to{transform:rotate(360deg);}}
+  .sx-kbd{
+    font-family:var(--font-display);font-size:9.5px;color:var(--text-dim);
+    background:var(--bg-panel);border:1px solid var(--border);border-bottom-width:2px;
+    padding:1px 5px;border-radius:3px;line-height:1.4;
+  }
+  @media(max-width:900px){
+    .sx-trigger{width:32px;padding:0;justify-content:center;}
+    .sx-trigger-label,.sx-trigger .sx-kbd{display:none;}
+  }
+
+  /* ---------- overlay + panel ---------- */
+  .sx-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;justify-content:center;align-items:flex-start;
+    padding:12vh 16px 16px;
+  }
+  .sx-overlay[hidden],.sx-hitbar[hidden]{display:none !important;}
+  .sx-backdrop{
+    position:absolute;inset:0;
+    background:rgba(2,5,4,0.74);backdrop-filter:blur(4px);
+    opacity:0;transition:opacity .2s ease;
+  }
+  .sx-panel{
+    position:relative;width:100%;max-width:640px;max-height:76vh;
+    display:flex;flex-direction:column;overflow:hidden;
+    background:var(--bg-panel);border:1px solid var(--green-dim);border-radius:4px;
+    box-shadow:0 24px 70px -20px rgba(0,0,0,0.9),0 0 44px -20px var(--green);
+    opacity:0;transform:translateY(-10px) scale(.985);
+    transition:opacity .22s ease,transform .28s cubic-bezier(.16,.84,.44,1);
+  }
+  .sx-panel::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+  }
+  .sx-overlay.is-open .sx-backdrop{opacity:1;}
+  .sx-overlay.is-open .sx-panel{opacity:1;transform:none;}
+
+  .sx-bar{
+    display:flex;align-items:center;gap:10px;padding:8px 12px;
+    background:var(--bg-panel-2);border-bottom:1px solid var(--border);
+    font-family:var(--font-display);font-size:10.5px;color:var(--text-dim);
+  }
+  .sx-dots{display:flex;gap:5px;}
+  .sx-dots i{display:block;width:8px;height:8px;border-radius:50%;}
+  .sx-dots i:nth-child(1){background:#ff5f56;}
+  .sx-dots i:nth-child(2){background:#ffbd2e;}
+  .sx-dots i:nth-child(3){background:#27c93f;}
+  .sx-title{flex:1;}
+  .sx-esc{
+    background:none;border:1px solid var(--border);border-radius:3px;
+    color:var(--text-dim);font-family:var(--font-display);font-size:10px;
+    padding:2px 7px;cursor:pointer;
+  }
+  .sx-esc:hover,.sx-esc:focus-visible{color:var(--green);border-color:var(--green-dim);outline:none;}
+
+  .sx-field{
+    display:flex;align-items:center;gap:10px;padding:16px 16px 14px;
+    border-bottom:1px solid var(--green-faint);cursor:text;
+    font-family:var(--font-display);
+  }
+  .sx-prompt{color:var(--green);font-size:13px;white-space:nowrap;}
+  .sx-prompt .sx-host{color:var(--green-dim);}
+  .sx-input{
+    flex:1;min-width:0;background:transparent;border:none;outline:none;
+    color:var(--green-bright);caret-color:var(--green);
+    font-family:var(--font-display);font-size:15px;
+  }
+  .sx-input::placeholder{color:var(--text-dim);opacity:.6;}
+
+  .sx-results{
+    flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 0 8px;
+    scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  }
+  .sx-group{
+    display:flex;justify-content:space-between;
+    padding:12px 16px 4px;
+    font-family:var(--font-display);font-size:10.5px;color:var(--green-dim);letter-spacing:.03em;
+  }
+  .sx-group span{color:var(--text-dim);}
+  .sx-item{
+    position:relative;padding:8px 16px 8px 32px;
+    border-left:2px solid transparent;
+    font-size:12.5px;line-height:1.55;color:var(--text);cursor:pointer;
+  }
+  .sx-item::before{content:'>';position:absolute;left:15px;color:var(--border);font-family:var(--font-display);}
+  .sx-item.is-active{background:rgba(61,255,154,0.07);border-left-color:var(--green);}
+  .sx-item.is-active::before{color:var(--green);}
+
+  .sx-empty{padding:20px 16px 12px;color:var(--text-dim);font-size:12.5px;}
+  .sx-empty b{color:var(--amber);font-weight:400;}
+  .sx-suggest{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .sx-chip{
+    background:var(--bg-panel-2);border:1px solid var(--border);border-radius:3px;
+    color:var(--text);font-family:var(--font-display);font-size:11px;
+    padding:5px 10px;cursor:pointer;transition:border-color .15s ease,color .15s ease;
+  }
+  .sx-chip:hover,.sx-chip:focus-visible{border-color:var(--green-dim);color:var(--green-bright);outline:none;}
+
+  .sx-foot{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:8px 14px;background:var(--bg-panel-2);border-top:1px solid var(--border);
+    font-family:var(--font-display);font-size:10.5px;color:var(--text-dim);
+  }
+  .sx-keys kbd{
+    font-family:var(--font-display);font-size:9.5px;color:var(--text);
+    border:1px solid var(--border);border-bottom-width:2px;border-radius:3px;
+    padding:0 4px;margin:0 2px;
+  }
+
+  /* ---------- highlights (results list + the page itself) ---------- */
+  .sx-item mark,
+  mark.sx-hit{
+    background:rgba(61,255,154,0.18);color:var(--green-bright);
+    border-radius:2px;padding:0 1px;box-shadow:inset 0 -1px 0 var(--green);
+  }
+  mark.sx-hit.is-current{
+    background:var(--amber);color:#1a0f00;
+    box-shadow:0 0 0 2px rgba(255,180,84,0.3),0 0 16px rgba(255,180,84,0.45);
+  }
+  .sx-flash{animation:sxFlash 1.6s ease-out 1;}
+  @keyframes sxFlash{
+    0%{outline:1px solid var(--green);outline-offset:8px;background:rgba(61,255,154,0.08);}
+    100%{outline:1px solid transparent;outline-offset:2px;background:transparent;}
+  }
+
+  /* ---------- floating "hits" bar after jumping to a result ---------- */
+  .sx-hitbar{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;
+    display:flex;align-items:center;gap:6px;max-width:calc(100% - 120px);
+    padding:6px 6px 6px 12px;
+    background:rgba(10,19,16,0.94);backdrop-filter:blur(6px);
+    border:1px solid var(--green-dim);border-radius:3px;
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.9),0 0 18px -10px var(--green);
+    font-family:var(--font-display);font-size:11px;color:var(--text-dim);
+  }
+  .sx-hb-count{color:var(--amber);white-space:nowrap;}
+  .sx-hb-q{color:var(--green-bright);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:4px;}
+  .sx-hb-btn{
+    width:26px;height:24px;display:inline-flex;align-items:center;justify-content:center;
+    background:none;border:1px solid var(--border);border-radius:2px;
+    color:var(--text-dim);font-family:var(--font-display);font-size:12px;cursor:pointer;
+  }
+  .sx-hb-btn:hover,.sx-hb-btn:focus-visible{color:var(--green);border-color:var(--green-dim);outline:none;}
+
+  @media(max-width:600px){
+    .sx-overlay{padding-top:56px;}
+    .sx-panel{max-height:calc(100vh - 76px);}
+    .sx-host,.sx-keys{display:none;}
+    .sx-hitbar{bottom:18px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .sx-panel,.sx-backdrop{transition:none;}
+    .sx-trigger:hover .sx-lens-scan{animation:none;}
+    .sx-flash{animation:none;outline:1px solid var(--green);outline-offset:4px;}
+  }
+</style>
+<!-- ======================= BLOCK 1 — SEARCH END (styles) ======================= -->
+
+
+<!-- ======================= BLOCK 2 — SEARCH START (top-bar button) ======================= -->
+<button id="sxOpen" class="sx-trigger" type="button" aria-label="Search this site" aria-haspopup="dialog" aria-controls="sxOverlay">
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle class="sx-lens" cx="10" cy="10" r="6.5"/>
+    <circle class="sx-lens-scan" cx="10" cy="10" r="6.5"/>
+    <line class="sx-handle" x1="15" y1="15" x2="20.5" y2="20.5"/>
+  </svg>
+  <span class="sx-trigger-label">search</span>
+  <kbd class="sx-kbd" id="sxKbd">Ctrl K</kbd>
+</button>
+<!-- ======================= BLOCK 2 — SEARCH END (top-bar button) ======================= -->
+
+
+<!-- ======================= BLOCK 3 — SEARCH START (overlay + hits bar) ======================= -->
+<div id="sxOverlay" class="sx-overlay" hidden>
+  <div class="sx-backdrop" data-sx-close></div>
+  <div class="sx-panel" role="dialog" aria-modal="true" aria-labelledby="sxTitle">
+    <div class="sx-bar">
+      <span class="sx-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="sx-title" id="sxTitle">Search this site</span>
+      <button type="button" class="sx-esc" data-sx-close aria-label="Close search">esc</button>
+    </div>
+    <label class="sx-field" for="sxInput">
+      <span class="sx-prompt" aria-hidden="true"><span class="sx-host">susant@wagle:~</span>$ grep -i</span>
+      <input id="sxInput" class="sx-input" type="text"
+             role="combobox" aria-expanded="false" aria-controls="sxResults" aria-autocomplete="list"
+             autocomplete="off" spellcheck="false" placeholder="wazuh, zero trust, burp…">
+    </label>
+    <div id="sxResults" class="sx-results" role="listbox" aria-label="Search results"></div>
+    <div class="sx-foot">
+      <span id="sxStatus" aria-live="polite"></span>
+      <span class="sx-keys"><kbd>↑</kbd><kbd>↓</kbd> move &nbsp;<kbd>↵</kbd> open &nbsp;<kbd>esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
+<div id="sxHitbar" class="sx-hitbar" role="status" aria-live="polite" hidden>
+  <span class="sx-hb-count" id="sxHbCount"></span>
+  <span class="sx-hb-q" id="sxHbQuery"></span>
+  <button type="button" class="sx-hb-btn" id="sxHbPrev" aria-label="Previous match" title="Previous match (N)">↑</button>
+  <button type="button" class="sx-hb-btn" id="sxHbNext" aria-label="Next match" title="Next match (n)">↓</button>
+  <button type="button" class="sx-hb-btn" id="sxHbClose" aria-label="Clear highlights" title="Clear highlights (Esc)">×</button>
+</div>
+<!-- ======================= BLOCK 3 — SEARCH END (overlay + hits bar) ======================= -->
+
+
+<!-- ======================= BLOCK 4 — SEARCH START (script) ======================= -->
+<script>
+/* ===================== SEARCH START ===================== */
+(function(){
+  'use strict';
+
+  var overlay   = document.getElementById('sxOverlay');
+  var openBtn   = document.getElementById('sxOpen');
+  if(!overlay || !openBtn) return;               // blocks 2/3 not pasted -> do nothing
+
+  var panel     = overlay.querySelector('.sx-panel');
+  var input     = document.getElementById('sxInput');
+  var resultsEl = document.getElementById('sxResults');
+  var statusEl  = document.getElementById('sxStatus');
+  var hitbar    = document.getElementById('sxHitbar');
+  var hbCount   = document.getElementById('sxHbCount');
+  var hbQuery   = document.getElementById('sxHbQuery');
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var MAX_RESULTS  = 40;
+  var SUGGESTIONS  = ['Wazuh', 'Zero Trust', 'Burp Suite', 'CypherMatha', 'OWASP', 'Singapore'];
+
+  /* Which elements count as one "searchable line" inside each .page-section */
+  var SEL = 'h1,h2,h3,p,li,tbody tr,.job-head,.job-meta,.log,.hero-tag,.geo-chip,' +
+            '.ack-card span,.cert-name,.cert-issuer,.id-row,.lang-strip > span';
+
+  var index = null;         // built lazily on first open
+  var results = [];         // current result list
+  var active = -1;          // highlighted result in the list
+  var hits = [];            // <mark> elements on the page
+  var hitPos = -1;
+  var lastFocus = null;
+  var closeTimer = null;
+  var renderTimer = null;
+  var navSeq = 0;           // bumps on every section navigation (cancels stale jumps)
+
+  /* Show ⌘K on Mac, Ctrl K elsewhere */
+  var kbd = document.getElementById('sxKbd');
+  if(kbd && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent)) kbd.textContent = '⌘ K';
+
+  /* ---------------- helpers ---------------- */
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function parseTerms(q){
+    var seen = {}, out = [];
+    q.toLowerCase().trim().split(/\s+/).forEach(function(t){
+      if(t && !seen[t]){ seen[t] = 1; out.push(t); }
+    });
+    if(out.join('').length < 2) return [];
+    return out.sort(function(a, b){ return b.length - a.length; });   // longest first for the regex
+  }
+  function makeRe(terms){ return new RegExp(terms.map(escRe).join('|'), 'gi'); }
+
+  /* Readable text of an element (decrypt headings use their final text, not the scrambled frame) */
+  function textOf(el){
+    if(el.hasAttribute('data-decrypt')) return el.getAttribute('data-decrypt');
+    var parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    while(w.nextNode()){
+      var t = w.currentNode.nodeValue.trim();
+      if(t) parts.push(t);
+    }
+    return parts.join(' ').replace(/\s+/g, ' ');
+  }
+
+  function sectionLabel(id){
+    var link = document.querySelector('#tbNav a[href="#' + id + '"]');
+    return link ? link.textContent.trim() : '~/' + id;
+  }
+
+  /* ---------------- index ---------------- */
+  function buildIndex(){
+    index = [];
+    document.querySelectorAll('.page-section').forEach(function(sec){
+      var label = sectionLabel(sec.id);
+      sec.querySelectorAll(SEL).forEach(function(el){
+        if(el.closest('.hero-role')) return;                        // skip the typewriter line
+        var outer = el.parentElement && el.parentElement.closest(SEL);
+        if(outer && sec.contains(outer)) return;                    // avoid nested duplicates
+        var t = textOf(el);
+        if(!t || t.length < 2) return;
+        index.push({ section: sec.id, label: label, el: el, text: t, lower: t.toLowerCase() });
+      });
+    });
+  }
+
+  /* ---------------- results list ---------------- */
+  function markup(text, re){
+    var out = '', last = 0;
+    text.replace(re, function(m, off){
+      out += esc(text.slice(last, off)) + '<mark>' + esc(m) + '</mark>';
+      last = off + m.length;
+      return m;
+    });
+    return out + esc(text.slice(last));
+  }
+
+  function snippet(text, re){
+    if(text.length <= 150) return markup(text, re);
+    re.lastIndex = 0;
+    var m = re.exec(text), pos = m ? m.index : 0;
+    var start = Math.max(0, pos - 50), end = Math.min(text.length, start + 150);
+    if(start > 0){ var sp = text.indexOf(' ', start); if(sp > -1 && sp < pos) start = sp + 1; }
+    return (start > 0 ? '…' : '') + markup(text.slice(start, end), re) + (end < text.length ? '…' : '');
+  }
+
+  function chipsHTML(){
+    return '<div class="sx-suggest">' + SUGGESTIONS.map(function(s){
+      return '<button type="button" class="sx-chip" data-q="' + esc(s) + '">' + esc(s) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function setStatus(t){ statusEl.textContent = t; }
+
+  function render(){
+    var q = input.value, terms = parseTerms(q);
+    results = []; active = -1;
+    input.removeAttribute('aria-activedescendant');
+
+    if(!terms.length){
+      input.setAttribute('aria-expanded', 'false');
+      resultsEl.innerHTML = '<div class="sx-empty">Search skills, experience, projects and certifications on this page.' + chipsHTML() + '</div>';
+      setStatus(q.trim() ? 'Type at least 2 characters' : index.length + ' lines indexed');
+      return;
+    }
+
+    var re = makeRe(terms);
+    var all = index.filter(function(it){
+      return terms.every(function(t){ return it.lower.indexOf(t) !== -1; });
+    });
+    results = all.slice(0, MAX_RESULTS);
+
+    if(!results.length){
+      input.setAttribute('aria-expanded', 'false');
+      resultsEl.innerHTML = '<div class="sx-empty">No matches for <b>"' + esc(q.trim()) + '"</b>. Check the spelling, or try one of these:' + chipsHTML() + '</div>';
+      setStatus('0 matches');
+      return;
+    }
+
+    var counts = {}, html = '', lastSec = null;
+    results.forEach(function(r){ counts[r.section] = (counts[r.section] || 0) + 1; });
+    results.forEach(function(r, i){
+      if(r.section !== lastSec){
+        html += '<div class="sx-group" role="presentation">' + esc(r.label) + '<span>' + counts[r.section] + '</span></div>';
+        lastSec = r.section;
+      }
+      html += '<div class="sx-item" role="option" id="sxOpt' + i + '" data-i="' + i + '" aria-selected="false">' + snippet(r.text, re) + '</div>';
+    });
+    resultsEl.innerHTML = html;
+    resultsEl.scrollTop = 0;
+    input.setAttribute('aria-expanded', 'true');
+    setActive(0, false);
+
+    var secs = Object.keys(counts).length;
+    setStatus(all.length + (all.length === 1 ? ' match' : ' matches') + ' in ' + secs + (secs === 1 ? ' section' : ' sections') +
+              (all.length > MAX_RESULTS ? ' (showing ' + MAX_RESULTS + ')' : ''));
+  }
+
+  function setActive(i, scroll){
+    var items = resultsEl.querySelectorAll('.sx-item');
+    if(!items.length) return;
+    if(active > -1 && items[active]){
+      items[active].classList.remove('is-active');
+      items[active].setAttribute('aria-selected', 'false');
+    }
+    active = (i + items.length) % items.length;
+    var el = items[active];
+    el.classList.add('is-active');
+    el.setAttribute('aria-selected', 'true');
+    input.setAttribute('aria-activedescendant', el.id);
+    if(scroll) el.scrollIntoView({ block: 'nearest' });
+  }
+
+  /* ---------------- open / close ---------------- */
+  function isOpen(){ return overlay.classList.contains('is-open'); }
+
+  function openSearch(){
+    if(isOpen()) return;
+    clearTimeout(closeTimer);
+    lastFocus = document.activeElement;
+    if(!index) buildIndex();
+    overlay.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    requestAnimationFrame(function(){ overlay.classList.add('is-open'); });
+    input.focus();
+    input.select();
+    render();
+  }
+
+  function closeSearch(restoreFocus){
+    if(!isOpen()) return;
+    overlay.classList.remove('is-open');
+    document.documentElement.style.overflow = '';
+    input.setAttribute('aria-expanded', 'false');
+    closeTimer = setTimeout(function(){ overlay.hidden = true; }, reduceMotion ? 0 : 220);
+    if(restoreFocus !== false && lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /* ---------------- reflect results on the page ---------------- */
+  function clearHits(){
+    document.querySelectorAll('mark.sx-hit').forEach(function(mk){
+      var p = mk.parentNode;
+      p.replaceChild(document.createTextNode(mk.textContent), mk);
+      p.normalize();
+    });
+    hits = []; hitPos = -1;
+    hitbar.hidden = true;
+  }
+
+  function highlightIn(root, re){
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(n){
+        var p = n.parentElement;
+        if(!n.nodeValue.trim() || !p) return NodeFilter.FILTER_REJECT;
+        // skip code, headings that re-type themselves, the typewriter and existing marks
+        if(p.closest('script,style,svg,mark.sx-hit,[data-decrypt],.hero-role')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(function(node){
+      var text = node.nodeValue, m, last = 0, frag = null;
+      re.lastIndex = 0;
+      while((m = re.exec(text))){
+        if(!m[0].length){ re.lastIndex++; continue; }
+        frag = frag || document.createDocumentFragment();
+        if(m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        var mk = document.createElement('mark');
+        mk.className = 'sx-hit';
+        mk.textContent = m[0];
+        frag.appendChild(mk);
+        last = m.index + m[0].length;
+      }
+      if(!frag) return;
+      if(last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+
+  function flash(el){
+    el.classList.remove('sx-flash');
+    void el.offsetWidth;
+    el.classList.add('sx-flash');
+    setTimeout(function(){ el.classList.remove('sx-flash'); }, 1700);
+  }
+
+  function showHit(i){
+    if(!hits.length) return;
+    if(hitPos > -1 && hits[hitPos]) hits[hitPos].classList.remove('is-current');
+    hitPos = (i + hits.length) % hits.length;
+    var mk = hits[hitPos];
+    mk.classList.add('is-current');
+    mk.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+    hbCount.textContent = (hitPos + 1) + '/' + hits.length;
+  }
+
+  function reflect(item, terms, q){
+    var section = document.getElementById(item.section);
+    if(!section) return;
+    highlightIn(section, makeRe(terms));
+    hits = Array.prototype.slice.call(section.querySelectorAll('mark.sx-hit'));
+
+    var first = -1;
+    for(var i = 0; i < hits.length; i++){ if(item.el.contains(hits[i])){ first = i; break; } }
+
+    if(first > -1){
+      hbQuery.textContent = '"' + q + '"';
+      hitbar.hidden = false;
+      showHit(first);
+    } else {
+      // match was in a heading that can't hold marks: scroll + flash it instead
+      item.el.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+      if(hits.length){ hbQuery.textContent = '"' + q + '"'; hitbar.hidden = false; hbCount.textContent = '0/' + hits.length; hitPos = -1; }
+    }
+    flash(item.el);
+  }
+
+  function choose(i){
+    var item = results[i];
+    if(!item) return;
+    var terms = parseTerms(input.value), q = input.value.trim();
+    closeSearch(false);
+    clearHits();
+
+    // reuse the site's own router by clicking the matching nav link
+    var link = document.querySelector('#tbNav a[href="#' + item.section + '"]') ||
+               document.querySelector('a[href="#' + item.section + '"]');
+    if(link) link.click();
+    var mySeq = navSeq;
+
+    // wait for the section switch + entry animation to settle, then highlight
+    setTimeout(function(){
+      if(mySeq !== navSeq) return;          // user navigated somewhere else meanwhile
+      reflect(item, terms, q);
+    }, reduceMotion ? 60 : 850);
+  }
+
+  /* ---------------- events ---------------- */
+  openBtn.addEventListener('click', openSearch);
+
+  overlay.addEventListener('click', function(e){
+    if(e.target.closest('[data-sx-close]')) closeSearch();
+  });
+
+  input.addEventListener('input', function(){
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 60);
+  });
+
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowDown'){ e.preventDefault(); setActive(active + 1, true); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); setActive(active - 1, true); }
+    else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(renderTimer){ clearTimeout(renderTimer); renderTimer = null; render(); }   // typed faster than the debounce
+      if(active > -1) choose(active);
+    }
+  });
+
+  resultsEl.addEventListener('click', function(e){
+    var chip = e.target.closest('.sx-chip');
+    if(chip){ input.value = chip.getAttribute('data-q'); render(); input.focus(); return; }
+    var it = e.target.closest('.sx-item');
+    if(it) choose(+it.getAttribute('data-i'));
+  });
+  resultsEl.addEventListener('mousemove', function(e){
+    var it = e.target.closest('.sx-item');
+    if(it && +it.getAttribute('data-i') !== active) setActive(+it.getAttribute('data-i'), false);
+  });
+
+  /* keep Tab inside the dialog while it's open */
+  panel.addEventListener('keydown', function(e){
+    if(e.key !== 'Tab') return;
+    var f = panel.querySelectorAll('input, button');
+    if(!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  });
+
+  document.getElementById('sxHbPrev').addEventListener('click', function(){ showHit(hitPos - 1); });
+  document.getElementById('sxHbNext').addEventListener('click', function(){ showHit(hitPos + 1); });
+  document.getElementById('sxHbClose').addEventListener('click', clearHits);
+
+  /* any normal section navigation clears old highlights */
+  document.addEventListener('click', function(e){
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if(!a) return;
+    var target = document.getElementById(a.getAttribute('href').slice(1));
+    if(target && target.classList.contains('page-section')){ navSeq++; clearHits(); }
+  });
+
+  /* global shortcuts: "/" and Ctrl/Cmd+K open, Esc closes, n / N step through highlights */
+  document.addEventListener('keydown', function(e){
+    var t = e.target, tag = (t.tagName || '').toLowerCase();
+    var typing = tag === 'input' || tag === 'textarea' || t.isContentEditable;
+
+    if((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      isOpen() ? closeSearch() : openSearch();
+      return;
+    }
+    if(e.key === '/' && !typing && !isOpen()){ e.preventDefault(); openSearch(); return; }
+    if(e.key === 'Escape'){
+      if(isOpen()) closeSearch();
+      else if(!hitbar.hidden) clearHits();
+      return;
+    }
+    if(!isOpen() && !typing && hits.length && !e.ctrlKey && !e.metaKey && !e.altKey){
+      if(e.key === 'n'){ showHit(hitPos + 1); }
+      else if(e.key === 'N'){ showHit(hitPos - 1); }
+    }
+  });
+})();
+/* ===================== SEARCH END ===================== */
+</script>
+<!-- ======================= BLOCK 4 — SEARCH END (script) ======================= -->
+
+  
 </header>
 
 <aside id="sidebar">
